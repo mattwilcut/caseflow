@@ -1,3 +1,4 @@
+require "prime"
 class Fakes::HearingRepository
   class << self
     attr_accessor :hearing_records
@@ -11,8 +12,13 @@ class Fakes::HearingRepository
   def self.hearings_for_appeal(appeal_vacols_id)
     appeal = Appeal.find_by(vacols_id: appeal_vacols_id)
     return [] unless appeal
-
     (hearing_records || []).select { |h| h.appeal_id == appeal.id }
+  end
+
+  def self.update_vacols_hearing!(vacols_id, hearing_info)
+    return if (hearing_info.keys & [:notes, :aod, :disposition, :hold_open, :transcript_requested]).empty?
+    hearing = hearing_records.find { |h| h.vacols_id == vacols_id }
+    hearing.update_attributes(hearing_info)
   end
 
   def self.clean!
@@ -23,10 +29,16 @@ class Fakes::HearingRepository
     user = User.find_by_vacols_id("LROTH")
     50.times.each do |i|
       type = VACOLS::CaseHearing::HEARING_TYPES.values[i % 3]
-      Generators::Hearing.build(
+      Generators::Hearing.create(
         type: type,
         date: Time.zone.now - (i % 9).days - rand(3).days,
-        user: user
+        user: user,
+        vacols_id: 950_330_575 + (i * 1465),
+        disposition: VACOLS::CaseHearing::HEARING_DISPOSITIONS.values[i % 4],
+        aod: [VACOLS::CaseHearing::BOOLEAN_MAP.values[i % 2], nil].sample,
+        hold_open: [30, 60, 90].sample,
+        notes: Prime.prime?(i) ? "The Veteran had active service from November 1989 to November 1990" : nil,
+        transcript_requested: [VACOLS::CaseHearing::BOOLEAN_MAP.values[i % 2], nil].sample
       )
     end
   end
