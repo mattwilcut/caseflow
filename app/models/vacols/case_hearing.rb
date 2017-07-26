@@ -18,6 +18,12 @@ class VACOLS::CaseHearing < VACOLS::Record
     N: :no_show
   }.freeze
 
+  HEARING_AODS = {
+    G: :granted,
+    Y: :filed,
+    N: :none
+  }.freeze
+
   BOOLEAN_MAP = {
     N: false,
     Y: true

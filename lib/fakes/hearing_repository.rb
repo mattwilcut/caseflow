@@ -35,7 +35,7 @@ class Fakes::HearingRepository
         user: user,
         vacols_id: 950_330_575 + (i * 1465),
         disposition: VACOLS::CaseHearing::HEARING_DISPOSITIONS.values[i % 4],
-        aod: [VACOLS::CaseHearing::BOOLEAN_MAP.values[i % 2], nil].sample,
+        aod: [VACOLS::CaseHearing::HEARING_AODS.values[i % 3], nil].sample,
         hold_open: [30, 60, 90].sample,
         notes: Prime.prime?(i) ? "The Veteran had active service from November 1989 to November 1990" : nil,
         transcript_requested: [VACOLS::CaseHearing::BOOLEAN_MAP.values[i % 2], nil].sample

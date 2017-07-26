@@ -33,7 +33,7 @@ describe Hearing do
       expect(subject.appeal.id).to eq(appeal.id)
       expect(subject.user.id).to eq(user.id)
       expect(subject.disposition).to eq(:no_show)
-      expect(subject.aod).to eq true
+      expect(subject.aod).to eq :filed
       expect(subject.transcript_requested).to eq nil
       expect(subject.hold_open).to eq 90
       expect(subject.notes).to eq "test notes"
@@ -82,7 +82,7 @@ describe Hearing do
     context "when Vacols needs an update" do
       let(:hearing_hash) do
         { notes: "test notes",
-          aod: true,
+          aod: :granted,
           transcript_requested: false,
           disposition: :postponed,
           hold_open: 60
@@ -97,7 +97,7 @@ describe Hearing do
         expect(hearing.hold_open).to eq nil
         subject
         expect(hearing.notes).to eq "test notes"
-        expect(hearing.aod).to eq true
+        expect(hearing.aod).to eq :granted
         expect(hearing.transcript_requested).to eq false
         expect(hearing.disposition).to eq :postponed
         expect(hearing.hold_open).to eq 60

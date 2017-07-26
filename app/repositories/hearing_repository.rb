@@ -20,7 +20,7 @@ class HearingRepository
         notes: hearing_hash[:notes].present? ? hearing_hash[:notes][0, 100] : nil,
         disposition: VACOLS::CaseHearing::HEARING_DISPOSITIONS.key(hearing_hash[:disposition]),
         hold_open: hearing_hash[:hold_open],
-        aod: VACOLS::CaseHearing::BOOLEAN_MAP.key(hearing_hash[:aod]),
+        aod: VACOLS::CaseHearing::HEARING_AODS.key(hearing_hash[:aod]),
         transcript_requested: VACOLS::CaseHearing::BOOLEAN_MAP.key(hearing_hash[:transcript_requested])
       }.select { |k, _v| hearing_hash.keys.include? k } # only send updates to key/values that are passed
     end

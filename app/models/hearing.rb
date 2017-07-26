@@ -73,7 +73,7 @@ class Hearing < ActiveRecord::Base
           date: AppealRepository.normalize_vacols_date(vacols_hearing.hearing_date),
           appeal: Appeal.find_or_create_by(vacols_id: vacols_hearing.folder_nr),
           user: User.find_by_vacols_id(vacols_hearing.user_id),
-          aod: VACOLS::CaseHearing::BOOLEAN_MAP[vacols_hearing.aod.try(:to_sym)],
+          aod: VACOLS::CaseHearing::HEARING_AODS[vacols_hearing.aod.try(:to_sym)],
           hold_open: vacols_hearing.holddays,
           transcript_requested: VACOLS::CaseHearing::BOOLEAN_MAP[vacols_hearing.tranreq.try(:to_sym)],
           notes: vacols_hearing.notes1,

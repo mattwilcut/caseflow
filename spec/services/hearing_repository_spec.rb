@@ -5,7 +5,7 @@ describe HearingRepository do
     context "when all values are present" do
       let(:info) do
         { notes: "test notes",
-          aod: true,
+          aod: :none,
           transcript_requested: false,
           disposition: :postponed,
           hold_open: 60 }
@@ -14,7 +14,7 @@ describe HearingRepository do
       it "should convert to Vacols values" do
         result = subject
         expect(result[:notes]).to eq "test notes"
-        expect(result[:aod]).to eq :Y
+        expect(result[:aod]).to eq :N
         expect(result[:transcript_requested]).to eq :N
         expect(result[:disposition]).to eq :P
         expect(result[:hold_open]).to eq 60
@@ -24,21 +24,21 @@ describe HearingRepository do
     context "when some values are missing" do
       let(:info) do
         { notes: "test notes",
-          aod: true }
+          aod: :granted }
       end
 
       it "should skip these values" do
         result = subject
         expect(result.values.size).to eq 2
         expect(result[:notes]).to eq "test notes"
-        expect(result[:aod]).to eq :Y
+        expect(result[:aod]).to eq :G
       end
     end
 
     context "values with nil" do
       let(:info) do
         { notes: nil,
-          aod: true }
+          aod: :filed }
       end
 
       it "should clear these values" do
