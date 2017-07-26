@@ -35,6 +35,21 @@ describe HearingRepository do
       end
     end
 
+    context "values with nil" do
+      let(:info) do
+        { notes: nil,
+          aod: true }
+      end
+
+      it "should clear these values" do
+        result = subject
+        expect(result.values.size).to eq 2
+        expect(result[:notes]).to eq nil
+        expect(result[:aod]).to eq :Y
+      end
+    end
+
+
     context "when some values do not need Vacols update" do
       let(:info) do
         { worksheet_military_service: "Vietnam 1968 - 1970" }

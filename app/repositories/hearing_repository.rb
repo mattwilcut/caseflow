@@ -22,7 +22,7 @@ class HearingRepository
         hold_open: hearing_hash[:hold_open],
         aod: VACOLS::CaseHearing::BOOLEAN_MAP.key(hearing_hash[:aod]),
         transcript_requested: VACOLS::CaseHearing::BOOLEAN_MAP.key(hearing_hash[:transcript_requested])
-      }.compact
+      }.select { |k, _v| hearing_hash.keys.include? k } # only send updates to key/values that are passed
     end
 
     private
