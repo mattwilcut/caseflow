@@ -65,6 +65,10 @@ class VACOLS::CaseHearing < VACOLS::Record
       select_hearings.where(folder_nr: appeal_vacols_id)
     end
 
+    def load_hearing(pkseq)
+      select_hearings.where(hearing_pkseq: pkseq).first
+    end
+
     def update_hearing!(vacols_record, hearing_info)
       conn = connection
 

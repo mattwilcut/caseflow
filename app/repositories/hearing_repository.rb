@@ -13,7 +13,29 @@ class HearingRepository
       hearing_hash = transform_hearing_info(hearing_hash)
       VACOLS::CaseHearing.update_hearing!(vacols_id, hearing_hash) unless hearing_hash.empty?
     end
+
+    def load_vacols_data(hearing)
+      vacols_record = VACOLS::CaseHearing.load_hearing(hearing.vacols_id)
+      set_vacols_values(hearing, vacols_record)
+      # handle not found
+      true
+    end
     # :nocov:
+
+    def set_vacols_values(hearing, vacols_record)
+      hearing.assign_from_vacols(
+        vacols_record: vacols_record,
+        venue_key: vacols_record.hearing_venue,
+        disposition: VACOLS::CaseHearing::HEARING_DISPOSITIONS[vacols_record.hearing_disp.try(:to_sym)],
+        date: AppealRepository.normalize_vacols_date(vacols_record.hearing_date),
+        aod: VACOLS::CaseHearing::HEARING_AODS[vacols_record.aod.try(:to_sym)],
+        hold_open: vacols_record.holddays,
+        transcript_requested: VACOLS::CaseHearing::BOOLEAN_MAP[vacols_record.tranreq.try(:to_sym)],
+        notes: vacols_record.notes1,
+        type: VACOLS::CaseHearing::HEARING_TYPES[vacols_record.hearing_type.to_sym]
+      )
+      hearing
+    end
 
     def transform_hearing_info(hearing_hash)
       {
@@ -29,7 +51,15 @@ class HearingRepository
 
     # :nocov:
     def hearings_for(case_hearings)
-      case_hearings.map { |hearing| Hearing.load_from_vacols(hearing) }
+      case_hearings.map do |vacols_record|
+        hearing = Hearing.find_or_create_by(vacols_id: vacols_record.hearing_pkseq).tap do |hearing|
+          hearing.attributes = {
+            appeal: Appeal.find_or_create_by(vacols_id: vacols_record.folder_nr),
+            user: User.find_by_vacols_id(vacols_record.user_id),
+          }
+        end
+        set_vacols_values(hearing, vacols_record)
+      end
     end
     # :nocov:
   end
