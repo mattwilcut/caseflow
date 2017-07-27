@@ -65,8 +65,11 @@ class VACOLS::CaseHearing < VACOLS::Record
       select_hearings.where(folder_nr: appeal_vacols_id)
     end
 
-    def update_hearing!(pkseq, hearing_info)
+    def update_hearing!(vacols_record, hearing_info)
       conn = connection
+
+      pkseq = vacols_record.pkseq
+      slogid = vacols_record.staff.slogid
 
       MetricsService.record("VACOLS: update_hearing! #{pkseq}",
                             service: :vacols,
@@ -74,7 +77,9 @@ class VACOLS::CaseHearing < VACOLS::Record
         conn.transaction do
           conn.execute(<<-SQL)
             UPDATE HEARSCHED
-            SET #{hearing_values(hearing_info)}
+            SET #{hearing_values(hearing_info)},
+                MDUSER = #{slogid},
+                MDTIME = SYSTIME
             WHERE HEARING_PKSEQ = #{pkseq}
           SQL
         end
@@ -86,7 +91,6 @@ class VACOLS::CaseHearing < VACOLS::Record
     def hearing_values(hearing_info)
       hearing_info.inject("") do |result, value|
         result << TABLE_NAMES[value[0]] + " = " + connection.quote(value[1])
-        result << ", " unless value[0] == hearing_info.keys.last
         result
       end
     end
@@ -106,6 +110,7 @@ class VACOLS::CaseHearing < VACOLS::Record
              :aod,
              :holddays,
              :tranreq,
+             :board_member,
              :sattyid)
         .joins("left outer join vacols.staff on staff.sattyid = board_member")
         .where(hearing_type: HEARING_TYPES.keys)

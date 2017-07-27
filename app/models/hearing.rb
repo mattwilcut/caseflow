@@ -24,7 +24,7 @@ class Hearing < ActiveRecord::Base
 
   def update(hearing_hash)
     transaction do
-      self.class.repository.update_vacols_hearing!(vacols_id, hearing_hash)
+      self.class.repository.update_vacols_hearing!(vacols_record, hearing_hash)
       super
     end
   end
