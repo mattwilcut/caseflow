@@ -38,6 +38,10 @@ podTemplate(cloud:'minikube', label:'caseflow', containers: [
     
     stage('git clone') {
       container('caseflow-test-runner') {
+        sh """
+        pwd
+        ls -hal
+        """
         dir(CASEFLOW_DIR) {
           checkout scm
         }
