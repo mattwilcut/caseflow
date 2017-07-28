@@ -511,6 +511,7 @@ export class Pdf extends React.PureComponent {
 
   handleAltC = () => {
     this.props.startPlacingAnnotation();
+    Analytics.event(ANALYTICS.VIEW_DOCUMENT_PAGE, 'key command', 'Add comment');
 
     const scrollWindowBoundingRect = this.scrollWindow.getBoundingClientRect();
     const firstPageWithRoomForIconIndex = pageIndexOfPageNumber(this.currentPage);
@@ -528,6 +529,7 @@ export class Pdf extends React.PureComponent {
   }
 
   handleAltEnter = () => {
+    Analytics.event(ANALYTICS.VIEW_DOCUMENT_PAGE, 'key command', 'Place comment');
     this.props.placeAnnotation(
       pageNumberOfPageIndex(this.props.placingAnnotationIconPageCoords.pageIndex),
       {
@@ -554,6 +556,7 @@ export class Pdf extends React.PureComponent {
     }
 
     if (event.code === 'Escape' && this.props.isPlacingAnnotation) {
+      Analytics.event(ANALYTICS.VIEW_DOCUMENT_PAGE, 'key command', 'Stop placing comment');
       this.props.stopPlacingAnnotation();
     }
   }
