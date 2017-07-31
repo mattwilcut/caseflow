@@ -35,6 +35,7 @@ podTemplate(cloud:'minikube', label:"caseflow", containers: [
       containerEnvVar(key: 'CHROME_ARGS', value: '--no-sandbox')
      ],) {
   node("caseflow") {
+    container('caseflow-test-runner') {
     // /home/jenkins is a shared volume called workspace-volume for this k8s Pod.
     // To keep the path short and avoid the "Chrome socket path too long" issue, we
     // can force Jenkins to checkout code to this directory.
@@ -74,8 +75,6 @@ podTemplate(cloud:'minikube', label:"caseflow", containers: [
     }
 
     stage('backend') {
-      parallel (
-        certification: {
           stage('certification test') {
               sh """
               cd ${CASEFLOW_DIR}
@@ -84,8 +83,6 @@ podTemplate(cloud:'minikube', label:"caseflow", containers: [
               bundle exec rake spec:parallel:certification
               """
             }
-        },
-        reader: {
           stage('reader test') {
               sh """
               cd ${CASEFLOW_DIR}
@@ -94,8 +91,6 @@ podTemplate(cloud:'minikube', label:"caseflow", containers: [
               bundle exec rake spec:parallel:reader
               """
             }
-        },
-        dispatch: {
           stage('dispatch test') {
               sh """
               cd ${CASEFLOW_DIR}
@@ -104,9 +99,6 @@ podTemplate(cloud:'minikube', label:"caseflow", containers: [
               bundle exec rake spec:parallel:dispatch
               """
             }
-        },
-
-        other: {
           stage('other test') {
               sh """
               cd ${CASEFLOW_DIR}
@@ -115,16 +107,12 @@ podTemplate(cloud:'minikube', label:"caseflow", containers: [
               bundle exec rake spec:parallel:other
               """
             }
-        },
-        javascript: {
           stage('javascript test') {
               sh """
               cd ${CASEFLOW_DIR}
               bundle exec rake mocha
               """
             }
-        },
-        unit: {
           stage('unit test') {
               sh """
               cd ${CASEFLOW_DIR}
@@ -133,8 +121,6 @@ podTemplate(cloud:'minikube', label:"caseflow", containers: [
               bundle exec rake spec:parallel:unit
               """
             }
-        },
-        api: {
           stage('api test') {
               sh """
               cd ${CASEFLOW_DIR}
@@ -143,24 +129,17 @@ podTemplate(cloud:'minikube', label:"caseflow", containers: [
               bundle exec rake spec:parallel:api
               """
             }
-        },
-        frontend: {
           stage('npm test') {
               sh """
               cd ${CASEFLOW_DIR}/client && npm run test
               """
             }
-        },
-	
-        lint: {
           stage('rake lint/security') {
               sh """
               cd ${CASEFLOW_DIR}
               rake security
               """
             }
-        }
-      )
     }
 
     stage('coverage') {
@@ -170,5 +149,6 @@ podTemplate(cloud:'minikube', label:"caseflow", containers: [
         rake konacha:run
         """
       }
+    }
   }
 }
