@@ -24,28 +24,36 @@ export class ReaderLoadingScreen extends React.Component {
       // We clear any loading failures before trying to load.
       this.props.onInitialDataLoadingFail(false);
 
-      ApiUtil.get(`/reader/appeal/${this.props.vacolsId}/documents`).then((response) => {
-        const returnedObject = JSON.parse(response.text);
-        const documents = returnedObject.appealDocuments;
-        const { annotations } = returnedObject;
+      const getDocuments = () => {
+        ApiUtil.get(`/reader/appeal/${this.props.vacolsId}/documents`).then((response) => {
+          const returnedObject = JSON.parse(response.text);
+          const documents = returnedObject.appealDocuments;
+          const { annotations } = returnedObject;
 
-        this.props.onReceiveDocs(documents, this.props.vacolsId);
-        this.props.onReceiveAnnotations(annotations);
-
-        const downloadDocuments = (documentUrls, index) => {
-          if (index >= documentUrls.length) {
-            return;
+          if (documents.length === 0) {
+            return getDocuments();
           }
 
-          ApiUtil.get(documentUrls[index], { cache: true }).then(
-            () => downloadDocuments(documentUrls, index + PARALLEL_DOCUMENT_REQUESTS)
-          );
-        };
+          this.props.onReceiveDocs(documents, this.props.vacolsId);
+          this.props.onReceiveAnnotations(annotations);
 
-        for (let i = 0; i < PARALLEL_DOCUMENT_REQUESTS; i++) {
-          downloadDocuments(documents.map((doc) => documentUrl(doc)), i);
-        }
-      }, this.props.onInitialDataLoadingFail);
+          const downloadDocuments = (documentUrls, index) => {
+            if (index >= documentUrls.length) {
+              return;
+            }
+
+            ApiUtil.get(documentUrls[index], { cache: true }).then(
+              () => downloadDocuments(documentUrls, index + PARALLEL_DOCUMENT_REQUESTS)
+            );
+          };
+
+          for (let i = 0; i < PARALLEL_DOCUMENT_REQUESTS; i++) {
+            downloadDocuments(documents.map((doc) => documentUrl(doc)), i);
+          }
+        }, this.props.onInitialDataLoadingFail);
+      };
+
+      getDocuments();
     }
   }
 
