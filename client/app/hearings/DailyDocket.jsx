@@ -1,9 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import TextareaContainer from './TextareaContainer';
 import DropdownContainer from './DropdownContainer';
-import CheckboxContainer from './CheckboxContainer';
+import {setTranscriptRequested} from './actions/dockets';
+import Checkbox from '../components/Checkbox';
 import moment from 'moment';
 import 'moment-timezone';
 import { Link } from 'react-router-dom';
@@ -105,11 +107,11 @@ export class DailyDocket extends React.Component {
                   action="updateDailyDocketAction"
                 />
                 <div className="transcriptRequested">
-                  <CheckboxContainer
-                    id={`hearing.${this.props.date}.${index}.${hearing.id}.transcript_requested`}
+                  <Checkbox
                     label="Transcript Requested"
-                    defaultValue={hearing.transcriptRequested}
-                    action="updateDailyDocketTranscript"
+                    name="Transcript Requested"
+                    value={hearing.transcriptRequested}
+                    onChange={(val) => this.props.setTranscriptRequested(index, val, this.props.date)} 
                   />
                 </div>
               </td>
@@ -147,8 +149,13 @@ const mapStateToProps = (state) => ({
   dockets: state.dockets
 });
 
+const mapDispatchToProps = (dispatch) => bindActionCreators({
+  setTranscriptRequested
+}, dispatch)
+
 export default connect(
-  mapStateToProps
+  mapStateToProps,
+  mapDispatchToProps
 )(DailyDocket);
 
 DailyDocket.propTypes = {

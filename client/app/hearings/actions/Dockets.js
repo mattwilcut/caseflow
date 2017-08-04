@@ -44,3 +44,12 @@ export const updateDailyDocketTranscript = (prop, value) => ({
     value
   }
 });
+
+export const setTranscriptRequested = (hearingIndex, value, date) => ({
+  type: Constants.SET_TRANSCRIPT_REQUESTED,
+  payload: {
+    hearingIndex,
+    value,
+    date
+  }
+})

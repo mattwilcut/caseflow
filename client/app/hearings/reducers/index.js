@@ -6,6 +6,7 @@
 * that would live at client/app/actions/**.js.
 */
 import update from 'immutability-helper';
+import * as Constants from '../constants/constants';
 
 export const mapDataToInitialState = function(state = {}) {
   return state;
@@ -33,6 +34,19 @@ export const hearingsReducers = function(state = mapDataToInitialState(), action
     return update(state, {
       dockets: { $set: action.payload.dockets }
     });
+
+  case Constants.SET_TRANSCRIPT_REQUESTED:
+    return update(state, {
+      dockets: {
+        [action.payload.date]: {
+          hearings_hash: {
+            [action.payload.hearingIndex]: {
+              transcript_requested: {$set: action.payload.value}
+            }
+          }
+        }
+      }
+    })
 
   case 'UPDATE_DAILY_DOCKET_NOTES':
   case 'UPDATE_DAILY_DOCKET_TRANSCRIPT':
