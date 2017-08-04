@@ -37,37 +37,13 @@ const getDate = (date, timezone) => {
     replace(/(p|a)m/, '$1.m.');
 };
 
-export class DailyDocket extends React.Component {
+export class HearingRow extends React.PureComponent {
+
+  updateTranscriptRequested = (value) => this.props.updateTranscriptRequested(value, this.props.index, this.props.date);
 
   render() {
-    const docket = this.props.docket;
-
-    return <div>
-      <div className="cf-app-segment cf-app-segment--alt cf-hearings">
-        <div className="cf-title-meta-right">
-          <div className="title cf-hearings-title-and-judge">
-            <h1>Daily Docket</h1>
-            <span>VLJ: {this.props.veteran_law_judge.full_name}</span>
-          </div>
-          <div className="meta">
-            <div>{moment(docket[0].date).format('ddd l')}</div>
-            <div>Hearing Type: {docket[0].request_type}</div>
-          </div>
-        </div>
-        <table className="cf-hearings-docket">
-          <thead>
-            <tr>
-              <th>Time/Regional Office</th>
-              <th>Appellant</th>
-              <th>Representative</th>
-              <th>
-                <span>Actions</span>
-                <span className="saving">Last saved at 10:30am</span>
-              </th>
-            </tr>
-          </thead>
-          {docket.map((hearing, index) =>
-          <tbody key={index}>
+    const {index, hearing} = this.props;
+    return <tbody key={index}>
             <tr>
               <td className="cf-hearings-docket-date">
                 <span>{index + 1}.</span>
@@ -131,7 +107,39 @@ export class DailyDocket extends React.Component {
               </td>
             </tr>
           </tbody>
-          )}
+  }
+}
+
+export class DailyDocket extends React.Component {
+
+  render() {
+    const docket = this.props.docket;
+
+    return <div>
+      <div className="cf-app-segment cf-app-segment--alt cf-hearings">
+        <div className="cf-title-meta-right">
+          <div className="title cf-hearings-title-and-judge">
+            <h1>Daily Docket</h1>
+            <span>VLJ: {this.props.veteran_law_judge.full_name}</span>
+          </div>
+          <div className="meta">
+            <div>{moment(docket[0].date).format('ddd l')}</div>
+            <div>Hearing Type: {docket[0].request_type}</div>
+          </div>
+        </div>
+        <table className="cf-hearings-docket">
+          <thead>
+            <tr>
+              <th>Time/Regional Office</th>
+              <th>Appellant</th>
+              <th>Representative</th>
+              <th>
+                <span>Actions</span>
+                <span className="saving">Last saved at 10:30am</span>
+              </th>
+            </tr>
+          </thead>
+          {docket.map((hearing, index) => <HearingRow hearing={hearing} index={index} key={hearing.id} />)}
         </table>
       </div>
       <div className="cf-alt--actions cf-alt--app-width">
