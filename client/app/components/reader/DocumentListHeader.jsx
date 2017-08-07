@@ -39,7 +39,9 @@ class DocumentListHeader extends React.Component {
         </div>
         <DocumentsCommentsButton />
       </div>
+      <div className="filter-placeholder">
         <HeaderFilterMessage docFilterCriteria={props.docFilterCriteria} />
+      </div>
     </div>;
   }
 }

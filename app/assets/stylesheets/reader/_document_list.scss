@@ -287,9 +287,14 @@ $tag-backgrond-color: #d6d7d9;
   margin-top: 10px;
 }
 
+.filter-placeholder {
+  height: 25px;
+}
+
 .document-list-header {
   display: flex;
   justify-content: space-between;
+  margin-bottom: 20px;
 
   .search-bar-and-doc-count {
     display: flex;
