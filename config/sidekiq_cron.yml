@@ -40,7 +40,7 @@ retrieve_documents_for_reader_job:
   cron: "0 21 * * * America/New_York"
   class: "RetrieveDocumentsForReaderJob"
   args:
-    limit: 1500
+    limit: 200
   queue: default
   active_job: true
 
