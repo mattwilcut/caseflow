@@ -13,14 +13,16 @@ export default class StyleGuideExpandaleTables extends React.Component {
     super(props);
 
     this.state = {
-      expanded: true,
-      active: 'expand1'
+      active: {
+        SHOW_COMMENTS: 'show_comments',
+        HIDE_COMMENTS: 'hide_comments'
+      }
     };
   }
 
-  handleClick = () => {
+  handleToggleClick = () => {
     this.setState({
-      expanded: !this.state.expanded
+      allCommentsExpanded: !this.state.expanded
     });
   }
 
@@ -30,17 +32,24 @@ export default class StyleGuideExpandaleTables extends React.Component {
 
   commentIcons = (expanded) => expanded ? <ChevronUp /> : <ChevronDown />;
 
+  expandableComment = (comment) => {
+    return <ul className="cf-no-styling-list">
+      <div className="horizontal-comment">
+        <div className="comment-container comment-horizontal-container comment-content">
+          {comment.comment}
+        </div>
+      </div>
+    </ul>
+  };
 
   getColumns = (row) => {
 
     if (row && row.expandable) {
       return [
         {
-          header: 'Name',
-          valueName: 'name',
-          span: () => {
-            return 4;
-          }
+          header: 'Comment',
+          valueFunction: (row) => this.expandableComment(row),
+          span: () => {return 6}
         }];
     }
 
@@ -55,7 +64,7 @@ export default class StyleGuideExpandaleTables extends React.Component {
         valueName: 'dateofbirth'
       },
       {
-        header: 'Likes icecream?',
+        header: 'Likes ice cream?',
         align: 'center',
         valueFunction: (person) => {
           return person.likesIceCream ? 'Yes' : 'No';
@@ -84,44 +93,33 @@ export default class StyleGuideExpandaleTables extends React.Component {
   render = () => {
 
   // List of objects which will be used to create each row
-    let rowObjects = [
+    const activeState = this.state.active;
+    const rowObjects = [
       { name: 'Marian',
         dateofbirth: '07/04/1776',
         likesIceCream: true
       },
-      { name: 'Marian Likes mint Chocolate ice cream',
+      { comment: 'Marian likes chocolate chip ice cream.',
         expandable: true
       },
       { name: 'Shade',
         dateofbirth: '04/29/2015',
         likesIceCream: true },
-      { name: 'Shade likes jazzy peanut butter ice cream with extra hot fudge.',
+      { comment: 'Shade likes jazzy peanut butter ice cream with extra hot fudge.',
         expandable: true
       },
       { name: 'Teja',
         dateofbirth: '06/04/1919',
         likesIceCream: true },
-      { name: 'Teja used to work at an ice cream shop and got very sick of it smelling dairy....',
+      { comment: 'Teja used to work at an ice cream shop and got very sick of it smelling dairy....',
         expandable: true
       },
       { name: 'Gina',
         dateofbirth: '04/23/1564',
         likesIceCream: false },
-      { name: 'Gina is lactose intolerant. It is very unfortunate.',
+      { comment: 'Gina is lactose intolerant. It is very unfortunate.',
         expandable: true }
     ];
-
-    // let expandableComment = () => {
-    //   return <div className="comment-horizontal-container">
-    //   <div className="horizontal-comment">
-    //     <div className="comment-content">
-    //       {row.expandable}
-    //     </div>
-    //   </div>
-    // </div>;
-    // };
-
-    let summary = 'Example styleguide table';
 
     return <div className="cf-sg-tables-section">
   <StyleGuideComponentTitle
@@ -142,13 +140,13 @@ export default class StyleGuideExpandaleTables extends React.Component {
 
     <div className="cf-push-right">
     <ToggleButton active={this.state.active}
-       onClick={this.menuClick}>
+       onClick={this.handleToggleClick}>
       <Button
-       name="expand1">
+       name={activeState.SHOW_COMMENTS}>
        Expand all
       </Button>
       <Button
-       name="expand2">
+       name={activeState.HIDE_COMMENTS}>
        Collapse all
       </Button>
      </ToggleButton>
@@ -157,7 +155,6 @@ export default class StyleGuideExpandaleTables extends React.Component {
     <Table
     columns={this.getColumns}
     rowObjects={rowObjects}
-    summary={summary}
     slowReRendersAreOk={true}
     />
   </div>;
