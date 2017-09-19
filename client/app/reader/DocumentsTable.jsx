@@ -8,7 +8,7 @@ import { formatDateStr } from '../util/DateUtil';
 import Comment from './Comment';
 import DocumentCategoryIcons from './DocumentCategoryIcons';
 import TagTableColumn from './TagTableColumn';
-import Table from '../components/Table';
+import Table2 from '../components/Table';
 import Button from '../components/Button';
 import * as Constants from './constants';
 import CommentIndicator from './CommentIndicator';
@@ -24,6 +24,9 @@ import {
   SortArrowUp, SortArrowDown, DoubleArrow } from '../components/RenderFunctions';
 import DocCategoryPicker from './DocCategoryPicker';
 import DocTagPicker from './DocTagPicker';
+
+import { CellMeasurerCache, CellMeasurer, defaultTableRowRenderer, Column, Table } from 'react-virtualized';
+import 'react-virtualized/styles.css';
 
 const NUMBER_OF_COLUMNS = 6;
 
@@ -147,12 +150,12 @@ export const getRowObjects = (documents, annotationsPerDocument, viewingDocument
       acc.push(doc);
     }
 
-    if (docHasComments && doc.listComments) {
-      acc.push({
-        ...doc,
-        isComment: true
-      });
-    }
+    // if (docHasComments && doc.listComments) {
+      // acc.push({
+        // ...doc,
+        // isComment: true
+      // });
+    // }
 
     return acc;
   }, []);
@@ -167,6 +170,7 @@ class DocumentsTable extends React.Component {
         category: {}
       }
     };
+
   }
 
   componentDidMount() {
@@ -180,7 +184,12 @@ class DocumentsTable extends React.Component {
     window.removeEventListener('resize', this.setFilterIconPositions);
   }
 
+  updateRowHeight = () => {
+    this.Table.recomputeRowHeights();
+  }
+
   setFilterIconPositions = () => {
+    return true;
     this.setCategoryFilterIconPosition();
     this.setTagFilterIconPosition();
   }
@@ -221,6 +230,7 @@ class DocumentsTable extends React.Component {
   }
 
   componentDidUpdate() {
+    return true;
     if (!this.hasSetScrollPosition) {
       this.tbodyElem.scrollTop = this.props.pdfList.scrollTop;
 
@@ -243,6 +253,26 @@ class DocumentsTable extends React.Component {
       this.hasSetScrollPosition = true;
     }
     this.setFilterIconPositions();
+  }
+
+  comments = (docId) => {
+    const comments = _.sortBy(this.props.annotationsPerDocument[docId], ['page', 'y']);
+    const commentNodes = comments.map((comment, commentIndex) => {
+      return <Comment
+        key={comment.uuid}
+        id={`comment${docId}-${commentIndex}`}
+        selected={false}
+        page={comment.page}
+        onJumpToComment={this.props.onJumpToComment(comment)}
+        uuid={comment.uuid}
+        horizontalLayout={true}>
+        {comment.comment}
+      </Comment>;
+    });
+
+    return <ul className="cf-no-styling-list cf-table-expanded-content" aria-label="Document comments">
+      {commentNodes}
+    </ul>;
   }
 
     // eslint-disable-next-line max-statements
@@ -396,10 +426,82 @@ class DocumentsTable extends React.Component {
       this.props.viewingDocumentsOrComments
     );
 
+
     return <div>
       <Table
+        role="presentation"
+        rowCount={rowObjects.length}
+        rowGetter={({ index }) => rowObjects[index]}
+        width={1200}
+        rowHeight={({index}) => {
+          const doc = rowObjects[index];
+          let height = 50;
+          const comments = this.props.annotationsPerDocument[doc.id];
+          if (doc.listComments) {
+            height += (80 * comments.length);
+          }
+          return height;
+        }}
+        headerHeight={30}
+        height={300}
+        ref={(table) => {
+          this.Table = table;
+        }}
+        rowRenderer={(data) => {
+          const doc = data.rowData;
+          let comments;
+
+          let { columns, style, className } = data;
+            return <div
+              key={doc.id}
+              style={style}
+              className={className}
+              role="row"
+              aria-label="row"
+            >
+            <div style={{display: 'flex', width: '100%'}}>
+              {columns}
+            </div>
+            {doc.listComments && this.comments(doc.id)}
+          </div>
+        }}
+      >
+        <Column
+          width={300}
+          label='Receipt Date'
+          dataKey='id'
+          cellRenderer={({ parent, rowIndex, rowData, dataKey }) => {
+            return <span className="document-list-receipt-date">
+              <Highlight>
+                {formatDateStr(rowData.receivedAt)}
+              </Highlight>
+            </span>
+          }}
+        />
+        <Column
+          width={500}
+          height={50}
+          label='Document Type'
+          dataKey='id'
+          cellRenderer={({ rowData }) => {
+            return <ConnectedDocTypeColumn doc={rowData}
+              documentPathBase={this.props.documentPathBase}/>
+          }}
+        />
+        <Column
+          width={100}
+          height={50}
+          label='Comments'
+          dataKey='id'
+          cellRenderer={({ rowData }) => {
+            return <CommentIndicator docId={rowData.id} onClick={this.updateRowHeight}/>
+          }}
+        />
+      </Table>
+
+      {/*<Table2
         columns={this.getDocumentColumns}
-        rowObjects={rowObjects}
+        rowObjects={rowObjects.slice(0, 10)}
         summary="Document list"
         className="documents-table"
         headerClassName="cf-document-list-header-row"
@@ -408,7 +510,7 @@ class DocumentsTable extends React.Component {
         tbodyId="documents-table-body"
         tbodyRef={this.getTbodyRef}
         getKeyForRow={this.getKeyForRow}
-      />
+        />*/ }
     </div>;
   }
 }

@@ -14,7 +14,7 @@ class CommentIndicator extends React.PureComponent {
   toggleComments = () => this.props.handleToggleCommentOpened(this.props.docId, this.props.expanded)
 
   render() {
-    const { annotationsCount, expanded, docId } = this.props;
+    const { annotationsCount, expanded, docId, onClick } = this.props;
     const name = `expand ${annotationsCount} comments`;
     const commentArrowComponent = expanded ? <ChevronUp /> : <ChevronDown />;
 
@@ -26,7 +26,10 @@ class CommentIndicator extends React.PureComponent {
           ariaLabel={name}
           name={name}
           id={`expand-${docId}-comments-button`}
-          onClick={this.toggleComments}>
+          onClick={() => {
+            this.toggleComments();
+            onClick();
+          }}>
           {annotationsCount}
           {commentArrowComponent}
         </Button>
