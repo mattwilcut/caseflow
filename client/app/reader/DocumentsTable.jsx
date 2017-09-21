@@ -25,7 +25,7 @@ import {
 import DocCategoryPicker from './DocCategoryPicker';
 import DocTagPicker from './DocTagPicker';
 
-import { CellMeasurerCache, CellMeasurer, defaultTableRowRenderer, Column, Table } from 'react-virtualized';
+import { defaultTableRowRenderer, Column, Table } from 'react-virtualized';
 import 'react-virtualized/styles.css';
 
 const NUMBER_OF_COLUMNS = 6;
@@ -255,7 +255,7 @@ class DocumentsTable extends React.Component {
     this.setFilterIconPositions();
   }
 
-  comments = (docId) => {
+  commentsRenderer = (docId) => {
     const comments = _.sortBy(this.props.annotationsPerDocument[docId], ['page', 'y']);
     const commentNodes = comments.map((comment, commentIndex) => {
       return <Comment
@@ -449,20 +449,20 @@ class DocumentsTable extends React.Component {
         }}
         rowRenderer={(data) => {
           const doc = data.rowData;
-          let comments;
-
           let { columns, style, className } = data;
-            return <div
-              key={doc.id}
-              style={style}
-              className={className}
-              role="row"
-              aria-label="row"
-            >
+
+          return <div
+            key={doc.id}
+            style={style}
+            className={className}
+            role="row"
+            aria-label="row"
+            tabIndex="0"
+          >
             <div style={{display: 'flex', width: '100%'}}>
               {columns}
             </div>
-            {doc.listComments && this.comments(doc.id)}
+            {doc.listComments && this.commentsRenderer(doc.id)}
           </div>
         }}
       >
