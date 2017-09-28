@@ -5,49 +5,68 @@ import { categoryFieldNameOfCategoryName, update, moveModel } from './utils';
 import { searchString, commentContainsWords, categoryContainsWords } from './search';
 import { timeFunction } from '../util/PerfDebug';
 
+const updateListComments = (state, id, foundComment) => {
+  return update(state, {
+    documents: {
+      [id]: {
+        listComments: {
+          $set: foundComment
+        }
+      }
+    }
+  });
+};
+
+const updateSearchCategoryHighlights = (state, docId, categoryMatches) => {
+  return update(state, {
+    ui: {
+      searchCategoryHighlights: {
+        $merge: {
+          [docId]: {
+            ...categoryMatches
+          }
+        }
+      }
+    }
+  });
+};
+
+
 const updateFilteredDocIds = (nextState) => {
+  console.log('EXECUTING updateFilteredDocIds');
+  const start = window.performance.now();
   const { docFilterCriteria } = nextState.ui;
+
+  const action1 = 'activeCategoryFilters';
+  console.log('EXECUTING ', action1);
+  const start1 = window.performance.now();
   const activeCategoryFilters = _(docFilterCriteria.category).
         toPairs().
         filter((([key, value]) => value)). // eslint-disable-line no-unused-vars
         map(([key]) => categoryFieldNameOfCategoryName(key)).
         value();
+  const end1 = window.performance.now();
+  const timeLabel1 = `${(end1 - start1).toFixed(2)}ms`;
+  console.log(action1, 'took', timeLabel1);
 
+  const action2 = 'activeTagFilters';
+  console.log('EXECUTING', action2);
+  const start2 = window.performance.now();
   const activeTagFilters = _(docFilterCriteria.tag).
         toPairs().
         filter((([key, value]) => value)). // eslint-disable-line no-unused-vars
         map(([key]) => key).
         value();
-
-  const updateListComments = (state, id, foundComment) => {
-    return update(state, {
-      documents: {
-        [id]: {
-          listComments: {
-            $set: foundComment
-          }
-        }
-      }
-    });
-  };
-
-  const updateSearchCategoryHighlights = (state, docId, categoryMatches) => {
-    return update(state, {
-      ui: {
-        searchCategoryHighlights: {
-          $merge: {
-            [docId]: {
-              ...categoryMatches
-            }
-          }
-        }
-      }
-    });
-  };
+  const end2 = window.performance.now();
+  const timeLabel2 = `${(end2 - start2).toFixed(2)}ms`;
+  console.log(action2, 'took', timeLabel2);
 
   const searchQuery = _.get(docFilterCriteria, 'searchQuery', '').toLowerCase();
   let updatedNextState = nextState;
 
+  const action3 = 'filteredIds';
+  console.log('EXECUTING', action3);
+  const start3 = window.performance.now();
   const filteredIds = _(nextState.documents).
     filter(
       (doc) => !activeCategoryFilters.length ||
@@ -63,9 +82,23 @@ const updateFilteredDocIds = (nextState) => {
     sortBy(docFilterCriteria.sort.sortBy).
     map('id').
     value();
+  const end3 = window.performance.now();
+  const timeLabel3 = `${(end3 - start3).toFixed(2)}ms`;
+  console.log(action3, 'took', timeLabel3);
+
+  const action4 = 'LoopThroughAllDocuments';
+  console.log('EXECUTING', action4);
+  const start4 = window.performance.now();
 
   // looping through all the documents to update category highlights and expanding comments
-  _.forEach(updatedNextState.documents, (doc) => {
+  _.forEach(updatedNextState.documents, (doc, index) => {
+    let action5, start5;
+    if (index === "1") {
+      action5 = 'Single document - update category/comments';
+      console.log('EXECUTING', action5);
+      start5 = window.performance.now();
+    }
+
     const containsWords = commentContainsWords(searchQuery, updatedNextState, doc);
 
     // getting all the truthy values from the object
@@ -74,27 +107,41 @@ const updateFilteredDocIds = (nextState) => {
 
     // update the state for all the search category highlights
     if (matchesCategories !== updatedNextState.ui.searchCategoryHighlights[doc.id]) {
-      updatedNextState = updateSearchCategoryHighlights(updatedNextState,
-        doc.id, matchesCategories);
+      updatedNextState.ui.searchCategoryHighlights[doc.id] = matchesCategories;
     }
 
     // updating the state of all annotations for expanded comments
     if (containsWords !== doc.listComments) {
-      updatedNextState = updateListComments(updatedNextState, doc.id, containsWords);
+      updatedNextState.documents[doc.id].listComments = containsWords;
+    }
+
+    if (index === "1") {
+      const end5 = window.performance.now();
+      const timeLabel5 = `${(end5 - start5).toFixed(2)}ms`;
+      console.log(action5, 'took', timeLabel5);
     }
   });
+
+  const end4 = window.performance.now();
+  const timeLabel4 = `${(end4 - start4).toFixed(2)}ms`;
+  console.log(action4, 'took', timeLabel4);
 
   if (docFilterCriteria.sort.sortAscending) {
     filteredIds.reverse();
   }
 
-  return update(updatedNextState, {
+  const finalState = update(updatedNextState, {
     ui: {
       filteredDocIds: {
         $set: filteredIds
       }
     }
   });
+  const end = window.performance.now();
+  const timeLabel = `${(end - start).toFixed(2)}ms`;
+  console.log('updateFilteredDocIds took ', timeLabel);
+
+  return finalState;
 };
 
 const setErrorMessageState = (state, errorMessageKey, errorMessageVal) =>
@@ -207,8 +254,7 @@ export const initialState = {
   editingAnnotations: {},
   annotations: {},
   documents: {},
-  pages: {},
-  pdfDocuments: {}
+  documentsByFile: {}
 };
 
 export const reducer = (state = initialState, action = {}) => {
@@ -392,6 +438,18 @@ export const reducer = (state = initialState, action = {}) => {
         }
       }
     }), action.payload.docId);
+  case Constants.SET_PDF_READY_TO_SHOW:
+    return update(state, {
+      ui: {
+        pdf: {
+          pdfsReadyToShow: {
+            $set: {
+              [action.payload.docId]: true
+            }
+          }
+        }
+      }
+    });
   case Constants.TOGGLE_DOCUMENT_CATEGORY:
     return update(
       hideErrorMessage(state, 'category'),
@@ -1030,69 +1088,24 @@ export const reducer = (state = initialState, action = {}) => {
         }
       }
     );
-  case Constants.SET_UP_PDF_PAGE:
+  case Constants.SET_PDF_PAGE_DIMENSIONS:
     return update(
       state,
       {
-        pages: {
-          [`${action.payload.file}-${action.payload.pageIndex}`]: {
-            $set: action.payload.page
-          }
-        }
-      }
-    );
-  case Constants.CLEAR_PDF_PAGE: {
-    // We only want to remove the page and container if we're cleaning up the same page that is
-    // currently stored here. This is to avoid a race condition where a user returns to this
-    // page and the new page object is stored here before we have a chance to destroy the
-    // old object.
-    const FILE_PAGE_INDEX = `${action.payload.file}-${action.payload.pageIndex}`;
-
-    if (action.payload.page &&
-      _.get(state.pages, [FILE_PAGE_INDEX, 'page']) === action.payload.page) {
-      return update(
-        state,
-        {
-          pages: {
-            [FILE_PAGE_INDEX]: {
-              $merge: {
-                page: null,
-                container: null
-              }
-            }
-          }
-        }
-      );
-    }
-
-    return state;
-  }
-  case Constants.SET_PDF_DOCUMENT:
-    return update(
-      state,
-      {
-        pdfDocuments: {
+        documentsByFile: {
           [action.payload.file]: {
-            $set: action.payload.doc
+            $apply: (file) => ({
+              pages: {
+                ..._.get(file, ['pages'], {}),
+                [action.payload.pageIndex]: {
+                  ...action.payload.dimensions
+                }
+              }
+            })
           }
         }
       }
     );
-  case Constants.CLEAR_PDF_DOCUMENT:
-    if (action.payload.doc && _.get(state.pdfDocuments, [action.payload.file]) === action.payload.doc) {
-      return update(
-        state,
-        {
-          pdfDocuments: {
-            [action.payload.file]: {
-              $set: null
-            }
-          }
-        });
-    }
-
-    return state;
-
   default:
     return state;
   }
