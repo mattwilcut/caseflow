@@ -38,18 +38,12 @@ describe Hearing do
        Generators::Document.build(type: "SOC", received_at: 1.day.ago)]
     end
 
-    context "when appeal has issues" do
-      let!(:issue1) { Generators::WorksheetIssue.create(appeal: appeal) }
-      let!(:issue2) { Generators::WorksheetIssue.create(appeal: appeal) }
-
-      it "should return issues through the appeal" do
-        expect(subject["worksheet_issues"].size).to eq 2
-      end
-    end
-
     context "when hearing has appeals ready for hearing" do
-      it "should contain appeal streams" do
+      it "should contain appeal streams and associated worksheet issues" do
         expect(subject["appeals_ready_for_hearing"].size).to eq 2
+        # pending_hearing generator has 1 issue
+        expect(subject["appeals_ready_for_hearing"][0]["worksheet_issues"].size).to eq 1
+        expect(subject["appeals_ready_for_hearing"][1]["worksheet_issues"].size).to eq 1
       end
     end
 
@@ -92,31 +86,6 @@ describe Hearing do
       it "should load military service from appeal" do
         hearing.update(appeal: appeal)
         expect(subject).to eq "Test"
-      end
-    end
-  end
-
-  context "#issues" do
-    subject { hearing.worksheet_issues }
-    let(:hearing) { Hearing.create(vacols_id: "3456") }
-
-    context "when appeal is not set" do
-      it { is_expected.to eq [] }
-    end
-
-    context "when appeal does not have any issues" do
-      let(:appeal) { Appeal.create(vacols_id: "1234") }
-
-      it { is_expected.to eq [] }
-    end
-
-    context "when appeal has issues" do
-      let(:appeal) { Generators::Appeal.create(vacols_record: :remand_decided) }
-
-      it "should create issues" do
-        hearing.update(appeal: appeal)
-        subject
-        expect(subject.size).to eq 2
       end
     end
   end

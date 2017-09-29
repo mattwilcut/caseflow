@@ -1097,6 +1097,20 @@ describe Appeal do
     end
   end
 
+  context "#worksheet_issues" do
+    subject { appeal.worksheet_issues.size }
+
+    context "when appeal does not have any Vacols issues" do
+      let(:appeal) { Generators::Appeal.create(vacols_record: :ready_to_certify) }
+      it { is_expected.to eq 0 }
+    end
+
+    context "when appeal has Vacols issues" do
+      let(:appeal) { Generators::Appeal.create(vacols_record: :remand_decided) }
+      it { is_expected.to eq 2 }
+    end
+  end
+
   context "#sanitized_hearing_request_type" do
     subject { appeal.sanitized_hearing_request_type }
     let(:video_hearing_requested) { true }

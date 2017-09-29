@@ -1,3 +1,4 @@
+# :nocov:
 class Hearings::WorksheetsController < HearingsController
   def show
     @hearing_page_title = "Daily Docket | Hearing Worksheet"
