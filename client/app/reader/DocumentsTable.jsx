@@ -180,6 +180,7 @@ class DocumentsTable extends React.Component {
   }
 
   componentWillUnmount() {
+    return;
     this.props.setDocListScrollPosition(this.tbodyElem.scrollTop);
     window.removeEventListener('resize', this.setFilterIconPositions);
   }
@@ -432,7 +433,7 @@ class DocumentsTable extends React.Component {
         role="presentation"
         rowCount={rowObjects.length}
         rowGetter={({ index }) => rowObjects[index]}
-        width={1200}
+        width={1450}
         rowHeight={({index}) => {
           const doc = rowObjects[index];
           let height = 50;
@@ -442,6 +443,7 @@ class DocumentsTable extends React.Component {
           }
           return height;
         }}
+        className='documents-table'
         headerHeight={30}
         height={300}
         ref={(table) => {
@@ -467,10 +469,28 @@ class DocumentsTable extends React.Component {
         }}
       >
         <Column
-          width={300}
+          width={35}
+          dataKey='id'
+          cellRenderer={({ rowData }) => {
+            return <ConnectedLastReadIndicator
+              docId={rowData.id}
+              getRef={this.getLastReadIndicatorRef}
+            />
+          }}
+        />
+        <Column
+          width={150}
+          dataKey='id'
+          label='Categories'
+          cellRenderer={({ rowData }) => {
+            return <DocumentCategoryIcons doc={rowData} />
+          }}
+        />
+        <Column
+          width={150}
           label='Receipt Date'
           dataKey='id'
-          cellRenderer={({ parent, rowIndex, rowData, dataKey }) => {
+          cellRenderer={({ rowData }) => {
             return <span className="document-list-receipt-date">
               <Highlight>
                 {formatDateStr(rowData.receivedAt)}
@@ -486,6 +506,15 @@ class DocumentsTable extends React.Component {
           cellRenderer={({ rowData }) => {
             return <ConnectedDocTypeColumn doc={rowData}
               documentPathBase={this.props.documentPathBase}/>
+          }}
+        />
+        <Column
+          width={500}
+          height={50}
+          label='Issue Tags'
+          dataKey='id'
+          cellRenderer={({ rowData }) => {
+            return <TagTableColumn tags={rowData.tags} />
           }}
         />
         <Column
