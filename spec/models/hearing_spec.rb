@@ -99,7 +99,7 @@ describe Hearing do
 
     subject { Hearing.create_from_vacols_record(vacols_record) }
 
-    it "should should create a hearing record" do
+    it "should create a hearing record" do
       subject
       hearing = Hearing.find_by(vacols_id: "1234")
       expect(hearing.present?).to be true
@@ -110,71 +110,26 @@ describe Hearing do
 
   context "#update" do
     subject { hearing.update(hearing_hash) }
-    let(:appeal) { Generators::Appeal.create(vacols_record: :form9_not_submitted) }
-    let(:hearing) { Generators::Hearing.create(appeal: appeal) }
+    let(:hearing) { Generators::Hearing.create }
 
     context "when Vacols does not need an update" do
       let(:hearing_hash) do
         {
           military_service: "Vietnam 1968 - 1970",
-          worksheet_issues_attributes: [
-            {
-              remand: true,
-              vha: true,
-              program: "Wheel",
-              name: "Spoon",
-              levels: %w(Cabbage Pickle),
-              description: %w(Donkey Cow),
-              from_vacols: true,
-              vacols_sequence_id: 1
-            }
-          ]
+          evidence: "Medical exam done on 10/10/2003",
+          witness: "Jane Smith attended",
+          contentions: "The veteran believes their neck is hurt",
+          comments_for_attorney: "Look for neck-related records"
         }
       end
 
-      it "updates nested attributes (worksheet_issues)" do
-        expect(hearing.worksheet_issues.count).to eq(0)
-        subject # do update
-        expect(hearing.worksheet_issues.count).to eq(1)
-
-        issue = hearing.worksheet_issues.first
-        expect(issue.remand).to eq true
-        expect(issue.allow).to eq false
-        expect(issue.deny).to eq false
-        expect(issue.dismiss).to eq false
-        expect(issue.vha).to eq true
-        expect(issue.program).to eq "Wheel"
-        expect(issue.name).to eq "Spoon"
-        expect(issue.levels).to eq %w(Cabbage Pickle)
-        expect(issue.description).to eq %w(Donkey Cow)
-
-        # test that a 2nd save updates the same record, rather than create new one
-        hearing_issue_id = hearing.worksheet_issues.first.id
-        hearing_hash[:worksheet_issues_attributes][0][:deny] = true
-        hearing_hash[:worksheet_issues_attributes][0][:description] = ["Tomato"]
-        hearing_hash[:worksheet_issues_attributes][0][:id] = hearing_issue_id
-
-        hearing.update(hearing_hash)
-
-        issue = hearing.worksheet_issues.first
-
-        expect(hearing.worksheet_issues.count).to eq(1)
-        expect(issue.id).to eq(hearing_issue_id)
-        expect(issue.deny).to eq(true)
-        expect(issue.remand).to eq(true)
-        expect(issue.allow).to eq(false)
-        expect(issue.dismiss).to eq(false)
-        expect(issue.program).to eq "Wheel"
-        expect(issue.name).to eq "Spoon"
-        expect(issue.levels).to eq %w(Cabbage Pickle)
-        expect(issue.description).to eq ["Tomato"]
-
-        # soft delete an issue
-        hearing_hash[:worksheet_issues_attributes][0][:_destroy] = "1"
-        hearing.update(hearing_hash)
-        expect(hearing.worksheet_issues.count).to eq(0)
-        expect(hearing.worksheet_issues.with_deleted.count).to eq(1)
-        expect(hearing.worksheet_issues.with_deleted.first.deleted_at).to_not eq nil
+      it "updates hearing columns" do
+        subject
+        expect(hearing.military_service).to eq "Vietnam 1968 - 1970"
+        expect(hearing.evidence).to eq "Medical exam done on 10/10/2003"
+        expect(hearing.witness).to eq "Jane Smith attended"
+        expect(hearing.contentions).to eq "The veteran believes their neck is hurt"
+        expect(hearing.comments_for_attorney).to eq "Look for neck-related records"
       end
     end
 

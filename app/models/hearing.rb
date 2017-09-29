@@ -9,8 +9,6 @@ class Hearing < ActiveRecord::Base
 
   belongs_to :appeal
   belongs_to :user # the judge
-  has_many :worksheet_issues, foreign_key: :appeal_id, primary_key: :appeal_id
-  accepts_nested_attributes_for :worksheet_issues, allow_destroy: true
 
   def venue
     self.class.venues[venue_key]

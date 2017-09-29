@@ -8,6 +8,7 @@ class Appeal < ActiveRecord::Base
   has_many :tasks
   has_many :appeal_views
   has_many :worksheet_issues
+  accepts_nested_attributes_for :worksheet_issues, allow_destroy: true
 
   class MultipleDecisionError < StandardError; end
 
