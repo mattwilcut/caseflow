@@ -228,6 +228,9 @@ RSpec.feature "Reader" do
         # Test that the title changed. Functionality in PageRoute.jsx
         expect(page).to have_title("Claims Folder | Caseflow Reader")
 
+        # Test that the header has breadcrumbs.
+        expect(page).to have_link("Claims Folder", href: "/reader/appeal/#{appeal.vacols_id}/documents")
+
         click_on "Caseflow"
         expect(page).to have_current_path("/reader/appeal/")
         expect(page).to have_title("Assignments | Caseflow Reader")
@@ -258,12 +261,12 @@ RSpec.feature "Reader" do
         expect(appeal_options[0]).to have_content("Veteran " + appeal3.veteran_full_name)
         expect(appeal_options[0]).to have_content("Veteran ID " + appeal3.vbms_id)
         expect(appeal_options[0]).to have_content("Issues")
-        expect(appeal_options[0].find_all("li").count).to eq(1)
+        expect(appeal_options[0].find_all("li").count).to eq(appeal3.issues.size)
 
         expect(appeal_options[1]).to have_content("Veteran " + appeal4.veteran_full_name)
         expect(appeal_options[1]).to have_content("Veteran ID " + appeal4.vbms_id)
         expect(appeal_options[1]).to have_content("Issues")
-        expect(appeal_options[1].find_all("li").count).to eq(1)
+        expect(appeal_options[1].find_all("li").count).to eq(appeal4.issues.count)
         expect(find("button", text: "Okay")).to be_disabled
 
         appeal_options[0].click
@@ -734,6 +737,8 @@ RSpec.feature "Reader" do
         visit "/reader/appeal/#{appeal.vacols_id}/documents"
 
         click_on documents[1].type
+        expect(page).to have_content("IN THE APPEAL", wait: 10)
+
         expect(page).to have_css(".page")
         scroll_element_to_view("pageContainer3")
         expect(find_field("page-progress-indicator-input").value).to eq "3"
@@ -763,7 +768,7 @@ RSpec.feature "Reader" do
 
           fill_in "page-progress-indicator-input", with: "23\n"
 
-          expect(find("#pageContainer23")).to have_content("Rating Decision", wait: 4)
+          expect(find("#pageContainer23")).to have_content("Rating Decision", wait: 10)
 
           expect(in_viewport("pageContainer23")).to be true
           expect(find_field("page-progress-indicator-input").value).to eq "23"
@@ -930,11 +935,11 @@ RSpec.feature "Reader" do
       end
 
       doc_0_categories =
-        get_aria_labels all(".section--document-list table tr:first-child .cf-document-category-icons li", count: 1)
+        get_aria_labels all(".cf-wide-app table tr:first-child .cf-document-category-icons li", count: 1)
       expect(doc_0_categories).to eq(["Case Summary"])
 
       doc_1_categories =
-        get_aria_labels all(".section--document-list table tr:nth-child(2) .cf-document-category-icons li", count: 3)
+        get_aria_labels all(".cf-wide-app table tr:nth-child(2) .cf-document-category-icons li", count: 3)
       expect(doc_1_categories).to eq(["Medical", "Other Evidence", "Case Summary"])
 
       click_on documents[0].type
@@ -949,7 +954,7 @@ RSpec.feature "Reader" do
       visit "/reader/appeal/#{appeal.vacols_id}/documents"
 
       doc_0_categories =
-        get_aria_labels all(".section--document-list table tr:first-child .cf-document-category-icons li", count: 1)
+        get_aria_labels all(".cf-wide-app table tr:first-child .cf-document-category-icons li", count: 1)
       expect(doc_0_categories).to eq(["Case Summary"])
 
       click_on documents[1].type

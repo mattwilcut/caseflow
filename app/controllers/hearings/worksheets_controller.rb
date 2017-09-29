@@ -10,11 +10,10 @@ class Hearings::WorksheetsController < HearingsController
     end
   end
 
-  # Until the frontend makes a PUT request, code coverage is at risk, so...
-  # def update
-  #  worksheet.update!(worksheet_params)
-  #  render json: { worksheet: worksheet.to_hash }
-  # end
+  def update
+    worksheet.update!(worksheet_params)
+    render json: { worksheet: hearing_worksheet }
+  end
 
   private
 
@@ -23,15 +22,13 @@ class Hearings::WorksheetsController < HearingsController
   end
   helper_method :worksheet
 
-  # Until the frontend makes a PUT request, code coverage is at risk, so...
-  # def worksheet_params
-  #  params.require(:worksheet).permit(:worksheet_witness, :worksheet_contentions, :worksheet_evidence,
-  #                                    :worksheet_coments_for_attorney, :worksheet_military_service,
-  #                                    issues_attributes: [
-  #                                      :id, :hearing_worksheet_status,
-  #                                      :hearing_worksheet_reopen, :hearing_worksheet_vha
-  #                                    ])
-  # end
+  def worksheet_params
+    params.require(:worksheet)
+          .permit(worksheet_issues_attributes: [:id, :allow, :deny, :remand, :dismiss,
+                                                :reopen, :vha, :program, :name, :from_vacols,
+                                                :vacols_sequence_id, :_destroy, description: [],
+                                                                                levels: []])
+  end
 
   def hearing_worksheet # rubocop:disable Metrics/MethodLength
     {
@@ -50,7 +47,8 @@ class Hearings::WorksheetsController < HearingsController
               allow: true,
               dismiss: false,
               deny: false,
-              vha: false },
+              vha: false,
+              from_vacols: false },
             "17": {
               id: 17,
               program: "Compensation",
@@ -62,11 +60,9 @@ class Hearings::WorksheetsController < HearingsController
               allow: true,
               dismiss: false,
               deny: false,
-              vha: true }
-          },
-          nod: 99,
-          soc: 10,
-          docs_in_efolder: 88 },
+              vha: true,
+              from_vacols: true }
+          } },
         "9092": {
           id: 9092,
           issues: {
@@ -81,7 +77,8 @@ class Hearings::WorksheetsController < HearingsController
               allow: false,
               dismiss: false,
               deny: false,
-              vha: false },
+              vha: false,
+              from_vacols: false },
             "1754": {
               id: 1754,
               program: "Compensation",
@@ -93,11 +90,9 @@ class Hearings::WorksheetsController < HearingsController
               allow: false,
               dismiss: false,
               deny: true,
-              vha: true }
-          },
-          nod: 99,
-          soc: 10,
-          docs_in_efolder: 88 } }
+              vha: true,
+              from_vacols: true }
+          } } }
     }.merge(worksheet.to_hash_for_worksheet)
   end
 end

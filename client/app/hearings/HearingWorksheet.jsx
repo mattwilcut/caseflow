@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import moment from 'moment';
@@ -8,6 +7,8 @@ import TextField from '../components/TextField';
 import TextareaField from '../components/TextareaField';
 import HearingWorksheetStream from './components/HearingWorksheetStream';
 
+// TODO Move all stream related to streams container
+import HearingWorksheetDocs from './components/HearingWorksheetDocs';
 
 import {
   onRepNameChange,
@@ -22,7 +23,7 @@ export class HearingWorksheet extends React.PureComponent {
 
   render() {
     let { worksheet } = this.props;
-    let readerLink = `/reader/appeal/${worksheet.vacols_id}/documents`;
+    let readerLink = `/reader/appeal/${worksheet.appeal_vacols_id}/documents`;
 
     return <div>
       <div className="cf-app-segment--alt cf-hearings-worksheet">
@@ -33,8 +34,8 @@ export class HearingWorksheet extends React.PureComponent {
             <span>VLJ: {this.props.veteran_law_judge.full_name}</span>
           </div>
           <div className="meta">
-            <div>{moment(this.props.date).format('ddd l')}</div>
-            <div>Hearing Type: {this.props.hearingType}</div>
+            <div>{moment(worksheet.date).format('ddd l')}</div>
+            <div>Hearing Type: {worksheet.request_type}</div>
           </div>
         </div>
 
@@ -75,12 +76,10 @@ export class HearingWorksheet extends React.PureComponent {
             <div><b>{worksheet.vbms_id}</b></div>
           </div>
           <div className="cf-hearings-worksheet-data-cell column-3">
-            <div>Docket Number:</div>
-            <div>1234567</div>
-          </div>
-          <div className="cf-hearings-worksheet-data-cell column-4">
             <div>Veteran's Age:</div>
             <div>{worksheet.veteran_age}</div>
+          </div>
+          <div className="cf-hearings-worksheet-data-cell column-4">
           </div>
           <div className="cf-hearings-worksheet-data-cell cf-hearings-worksheet-witness-cell column-5">
              <TextareaField
@@ -93,50 +92,14 @@ export class HearingWorksheet extends React.PureComponent {
           </div>
         </div>
 
-        <div className="cf-hearings-worksheet-data">
-          <h2 className="cf-hearings-worksheet-header">Relevant Documents</h2>
-          <h4>Docs in eFolder: 80</h4>
-          <p className="cf-appeal-stream-label">APPEAL STREAM 1</p>
-          <div className="cf-hearings-worksheet-data-cell column-1">
-            <div>NOD:</div>
-            <div>01/01/1990</div>
-          </div>
-          <div className="cf-hearings-worksheet-data-cell column-2">
-            <div>Form 9:</div>
-            <div>01/01/1990</div>
-          </div>
-          <div className="cf-hearings-worksheet-data-cell column-3">
-            <div>Prior BVA Decision:</div>
-            <div>01/01/1990</div>
-          </div>
-          <div className="cf-hearings-worksheet-data-cell column-4">
-            <div>&nbsp;</div>
-          </div>
-          <div className="cf-hearings-worksheet-data-cell column-5">
-            <div>Docs since Certification:</div>
-            <div>23</div>
-          </div>
-          <div className="cf-hearings-worksheet-data-cell column-1">
-            <div>SOC:</div>
-            <div>01/01/1990</div>
-          </div>
-          <div className="cf-hearings-worksheet-data-cell column-2">
-            <div>Certification:</div>
-            <div>01/01/1990</div>
-          </div>
-          <div className="cf-hearings-worksheet-data-cell column-3">
-            <div>SSOC:</div>
-            <div>01/01/1990</div>
-          </div>
-          <div className="cf-hearings-worksheet-data-cell column-4">
-            <div>&nbsp;</div>
-          </div>
-        </div>
+        <HearingWorksheetDocs
+          {...this.props}
+        />
 
-           <HearingWorksheetStream
-              worksheetStreams={this.props.worksheet.streams}
+        <HearingWorksheetStream
+           worksheetStreams={worksheet.streams}
               {...this.props}
-            />
+        />
 
         <form className="cf-hearings-worksheet-form">
           <div className="cf-hearings-worksheet-data">
@@ -204,9 +167,3 @@ export default connect(
   mapStateToProps,
   mapDispatchToProps
 )(HearingWorksheet);
-
-HearingWorksheet.propTypes = {
-  veteran_law_judge: PropTypes.object.isRequired,
-  date: PropTypes.string,
-  vbms_id: PropTypes.string
-};
