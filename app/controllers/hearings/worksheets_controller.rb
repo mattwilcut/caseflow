@@ -22,11 +22,6 @@ class Hearings::WorksheetsController < HearingsController
   end
   helper_method :worksheet
 
-  # def worksheet_params
-  #   params.require(:worksheet)
-  #         .permit()
-  # end
-
   def hearing_worksheet # rubocop:disable Metrics/MethodLength
     {
       streams: [
